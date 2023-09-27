@@ -13,7 +13,7 @@ Urlroutes.post("/UrlAdd", async (req, res) => {
     try {
         const payload = req.body
         const id = nanoid();
-        const Url = new UrlModel({ ...payload, ShortenedUrl: `https://bucolic-dusk-b4fca9.netlify.app/${id}`, id });
+        const Url = new UrlModel({ ...payload, ShortenedUrl: `https://bucolic-dusk-b4fca9.netlify.app/short/${id}`, id });
 
         await Url.save()
         res.send(Url)
