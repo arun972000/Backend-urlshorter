@@ -22,7 +22,7 @@ userRoutes.post("/register", async (req, res) => {
                 const token = jwt.sign({ email: payload.email }, process.env.JWT_KEY, { expiresIn: "1d" })
                 const user = new userModel({ ...payload, id: v4(), password: hash, isVerified: false, verifyToken: token });
                 await user.save()
-                const link = `http://localhost:5173/userVerify?token=${token}`
+                const link = `https://bucolic-dusk-b4fca9.netlify.app?token=${token}`
                 transporter.sendMail({ ...mailOptions, to: payload.email, text: `click this link: ${link}` }, function (error, info) {
                     if (error) {
                         console.log(error);
@@ -72,7 +72,7 @@ userRoutes.post("/resetPass", async (req, res) => {
         if (isUser) {
             const token = jwt.sign({ email }, process.env.JWT_KEY);
             await userModel.updateOne({ email }, { $set: { passwordToken: token } })
-            const link=`http://localhost:5173/verifyPass?token=${token}`
+            const link=`https://bucolic-dusk-b4fca9.netlify.app/verifyPass?token=${token}`
             transporter.sendMail({ ...mailOptions, to:email, text: `Copy this text and paste in token input: ${link}` }, function (error, info) {
                 if (error) {
                     console.log(error);
