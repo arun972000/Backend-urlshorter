@@ -2,6 +2,7 @@ import express, { json } from 'express';
 import DBclient from './mongoose/connect.js';
 import userRoutes from './Routes/users.js';
 import cors from "cors"
+import Urlroutes from './Routes/Urlshort.js';
 
 const app = express();
 
@@ -12,6 +13,8 @@ app.use(cors({
 }))
 
 app.use("/api",userRoutes)
+
+app.use("/api",Urlroutes)
 
 app.use(json())
 

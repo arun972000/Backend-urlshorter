@@ -31,4 +31,24 @@ const userShema= new mongoose.Schema({
 
 })
 
+
+const UrlShema= new mongoose.Schema({
+    id: {
+        type: "string",
+        required: true
+    },
+    OriginalUrl: {
+        type: "string",
+        required: true
+    },
+    ShortenedUrl: {
+        type: "string",
+        required: true
+    },
+   
+
+})
+
 export const userModel=mongoose.model("users",userShema)
+
+export const UrlModel =mongoose.model("Urls",UrlShema)

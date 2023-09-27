@@ -22,7 +22,7 @@ userRoutes.post("/register", async (req, res) => {
                 const token = jwt.sign({ email: payload.email }, process.env.JWT_KEY, { expiresIn: "1d" })
                 const user = new userModel({ ...payload, id: v4(), password: hash, isVerified: false, verifyToken: token });
                 await user.save()
-                const link = `http://localhost:5173/verify?token=${token}`
+                const link = `http://localhost:5173/userVerify?token=${token}`
                 transporter.sendMail({ ...mailOptions, to: payload.email, text: `click this link: ${link}` }, function (error, info) {
                     if (error) {
                         console.log(error);
@@ -44,7 +44,7 @@ userRoutes.post("/login", async (req, res) => {
     try {
         const payload = req.body;
         const isUser = await userModel.findOne({ email: payload.email }, { id: 1, name: 1, email: 1, password:1, isVerified: 1, verifyToken: 1, _id: 0 });
-        if (isUser) {
+        if (isUser && isUser.isVerified) {
             bcrypt.compare(payload.password, isUser.password, async (_err, result) => {
                 if (!result) {
                     
@@ -53,6 +53,8 @@ userRoutes.post("/login", async (req, res) => {
                     res.send(isUser)
                 }
             })
+        }else{
+            return res.status(409).send("no user found")
         }
     } catch (err) {
         res.status(500).send(err)
@@ -112,12 +114,16 @@ userRoutes.post("/tokenVerify", async (req, res) => {
 
 userRoutes.put("/updateUser",async(req,res)=>{
 try{
-    const payload=req.body
+    const {passwordToken}=req.body
     bcrypt.hash(payload.password,10,async(err,hash)=>{
         if(err){
             res.status(401).send(err)
         }else{
             const user = await userModel.updateOne({ email: payload.email }, { $set: { password: hash } })
+            if (passwordToken) {
+                userUpdate.$unset = { passwordToken };
+            }
+
             res.send("password updated")
         }   
     })
@@ -126,6 +132,25 @@ try{
     res.status(500).send(err)
 }
 })
+
+
+userRoutes.post("/loginVerify",async(req,res)=>{
+    try{
+        const payload=req.body;
+
+        jwt.verify(payload.verifyToken,process.env.JWT_KEY,async(err,result)=>{
+        
+            await userModel.updateOne({ email: result.email }, { '$set': { isVerified: true } });
+        })
+        res.send({ msg: 'User Verified' });
+    }catch (err) {
+        console.log(err);
+        res.status(500).send({ msg: 'Error occuerred while fetching users' });
+      }
+})
+
+
+
 
 export default userRoutes
 
